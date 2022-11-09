@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="buildall" name="CreateExtension" basedir=".">
+
+<!--
+   for command line run the following commands:
+   mkdir -p ~/.ant/lib
+   svn export svn+ssh://svn@svn.community4you.de/repo/fleet/trunk/comm_fleet_artifacts/tools/create_extension/create_extension.jar ~/.ant/lib
+-->
+
+  <taskdef name="createextension" classname="com.c4u.fleet3.server.impex.extension.ant.CreateExtensionTask"/>
+  
+  <target name="delete">
+    <delete>
+      <fileset dir=".">
+        <patternset>
+          <include name="*.xml.gz"/>
+        </patternset>
+      </fileset>
+    </delete>
+  </target>
+
+  <target name="buildall" depends="delete">
+  
+  	
+  	<createextension verbose="true" migrate="true" compatibilityMode="true" output="../data_migrations/extensions/extensions.xml.gz">
+  		<fileset dir="../artefacts/importdef">
+    	  <patternset>
+    	    <include name="*.xml" />  
+    	  </patternset>
+    	</fileset>  		
+  	</createextension>  	
+  </target>
+</project>

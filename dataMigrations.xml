@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<datamigration_definition>
+
+  <parameter>
+    <name>file_path</name>
+    <value>$base_dir$</value>
+  </parameter>
+
+
+  <step id="reset">
+    <description>Reset Database</description>
+    <java_class>com.c4u.fleet.server.core.frameworks.datamigration.ResetDatabaseContents</java_class>
+    <run_in_background>false</run_in_background>
+  </step>
+
+  
+  <step id="ext">
+    <description>Extensions</description>
+    <java_class>com.c4u.fleet.server.core.frameworks.datamigration.ImportExtensionsDatamigrationStep</java_class>
+    <run_in_background>false</run_in_background>
+    <parameter>
+      <name>source_path</name>
+      <value>$file_path$/extensions</value>
+    </parameter>
+  </step>
+
+  <step id="kabaum">
+    <description>Kostenartenbaum</description>
+    <java_class>com.c4u.fleet.server.core.frameworks.datamigration.ImportCosttypeTreeDatamigrationStep</java_class>
+    <run_in_background>false</run_in_background>
+    <parameter>
+      <name>file</name>
+      <value>$file_path$/../initial_data/global/kostenartenbaum.xlsx</value>
+    </parameter>
+  </step>
+
+  <step id="fahrzeug">
+    <description>Fahrzeug</description>
+    <java_class>com.c4u.fleet.server.core.frameworks.datamigration.FileImportDatamigrationStep</java_class>
+    <run_in_background>false</run_in_background>
+    <parameter>
+      <name>import_definition_id</name>
+      <value>com.c4u.fleet.importdef.test.initial.fahrzeug</value>
+    </parameter>
+    <parameter>
+      <name>source_file</name>
+      <value>$file_path$/../initial_data/global/test.xlsx</value>
+    </parameter>
+  </step>
+
+</datamigration_definition>

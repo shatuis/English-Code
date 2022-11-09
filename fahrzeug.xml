@@ -1,0 +1,51 @@
+<importdef
+  id="com.c4u.fleet.importdef.test.initial.fahrzeug"
+  name="Fahrzeug"
+  category="Initialdatenimport"
+  type="excel">
+  
+  <import_source>test_init</import_source>
+  
+  <initialize>
+    <![CDATA[
+      #set ( $skipFirst          = true )
+      #set ( $skipLast           = false )
+      #set ( $charset            = "UTF-8" )
+      #set ( $separator      = ";" )
+      #set ( $nameMap = {} )
+      $!nameMap.put(  0, "lfd_nr"            ) ##  0 /  1 / A: Lfd. Nr.
+      $!nameMap.put(  1, "nr"                ) ##  1 /  2 / B: Nr.
+      $!nameMap.put(  2, "kennzeichen"       ) ##  2 /  3 / C: Kennzeichen
+      $!nameMap.put(  3, "p_nummer"          ) ##  3 /  4 / D: P-Nummer
+      $!nameMap.put(  4, "name"              ) ##  4 /  5 / E: Name
+      $!nameMap.put(  5, "vorname"           ) ##  5 /  6 / F: Vorname
+      $!nameMap.put(  6, "kategorie"         ) ##  6 /  7 / G: Kategorie
+      $!nameMap.put(  7, "zuordnung_nl"      ) ##  7 /  8 / H: Zuordnung NL
+      $!nameMap.put(  8, "kst"               ) ##  8 /  9 / I: KST
+      $!nameMap.put(  9, "hersteller"        ) ##  9 / 10 / J: Hersteller
+      $!nameMap.put( 10, "modellreihe"       ) ## 10 / 11 / K: Modellreihe
+      $!nameMap.put( 11, "fahrzeugtyp"       ) ## 11 / 12 / L: Fahrzeugtyp
+      $!nameMap.put( 12, "zulassung"         ) ## 12 / 13 / M: Zulassung
+      $!nameMap.put( 13, "vrt_ende"          ) ## 13 / 14 / N: Vrt.Ende
+      $!nameMap.put( 14, "lz_ll"             ) ## 14 / 15 / O: LZ/LL
+      $!nameMap.put( 15, "leasing"           ) ## 15 / 16 / P: Leasing
+      $!nameMap.put( 16, "lv_nr"             ) ## 16 / 17 / Q: LV-Nr.
+      $!nameMap.put( 17, "fahrgestellnummer" ) ## 17 / 18 / R: Fahrgestellnummer
+      $!nameMap.put( 18, "aral_kartennummer" ) ## 18 / 19 / S: Aral-Kartennummer
+      $!nameMap.put( 19, "code"              ) ## 19 / 20 / T: Code
+      $!nameMap.put( 20, "tuev"              ) ## 20 / 21 / U: TÜV
+      $!nameMap.put( 21, "versicherungsnr"   ) ## 21 / 22 / V: VersicherungsNr.
+      $!nameMap.put( 22, "bemerkung"         ) ## 22 / 23 / W: Bemerkung
+      ## Formeln in Excel neu berechnen
+      #set ( $recalculateFormula = true )
+    ]]>
+  </initialize>
+  
+  <template>
+    <![CDATA[
+      <!-- c4u_fragment macros.vm -->
+      <!-- c4u_fragment fahrzeug.fragment.vm -->
+    ]]>
+  </template>
+
+</importdef>

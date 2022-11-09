@@ -1,0 +1,175 @@
+## create a component the import XML 
+  #macro (cmp $name $value)
+          <component name="$!name">
+              <value>$!value</value>
+          </component>
+  #end
+  
+  ## create a component the import XML 
+  #macro (cmp_udc $name $value)
+          <component name="$!name" user_defined="true">
+              <value>$!value</value>
+          </component>
+  #end
+  
+    ## parst $value als int
+  #macro(cmp_int $component $value)
+      #if ( $t.hasValue("$!value") )
+          #cmp("$!component", $t.parseInt("$!value") )
+      #else
+          #cmp("$!component", "" )
+      #end
+  #end
+  
+  ## parst $value als Zahl
+  #macro(cmp_dec $component $value $scale)
+      #if ( $t.hasValue("$!value") )
+          #cmp("$!component", $t.convertNumber($t.parseGermanDecimal("$!value"), $scale) )
+      #else
+          #cmp("$!component", "" )
+      #end
+  #end
+  
+  
+  ## parst $value als Datum
+  #macro(cmp_dat $component $value)
+      #if ( $t.hasValue("$!value") )
+          #cmp("$!component", $t.convertDate("dd.MM.yyyy", "$!value") )
+      #else
+          #cmp("$!component", "" )
+      #end
+  #end
+  
+  ## parst $value als Datum
+  #macro(cmp_dat_format $component $value $format)
+      #if ( $t.hasValue("$!value") )
+          #cmp("$!component", $t.convertDate($!format, "$!value") )
+      #else
+          #cmp("$!component", "" )
+      #end
+  #end
+  
+  ## parst $value als Datum inkl. Zeit
+  #macro(cmp_datetime $component $value)
+      #if ( $t.hasValue("$!value") )
+          #cmp("$!component", $t.convertDateTime("dd.MM.yyyy HH:mm", "$!value") )
+      #else
+          #cmp("$!component", "" )
+      #end
+  #end
+  
+  ## parst $value als Datum inkl. Zeit
+  #macro(cmp_datetime_format $component $value $format)
+      #if ( $t.hasValue("$!value") )
+          #cmp("$!component", $t.convertDateTime($!format, "$!value") )
+      #else
+          #cmp("$!component", "" )
+      #end
+  #end
+  
+  ## creates a reference component, using a remote_id
+  #macro(cmp_remote $component $table $value)
+    #if($!t.hasValue("$!value"))
+     <component name="$!component">
+            <document table="$!table">
+                <id>
+                    <remote_id>$!value</remote_id>
+                </id>
+            </document>
+     </component>
+     #end
+  #end
+  
+   ## creates a reference component, using a remote_id
+  #macro(cmp_remote_ds $component $table $ds $value)
+     <component name="$!component">
+            <document table="$!table">
+                <id>
+                    <remote_datasource_name>$!ds</remote_datasource_name>
+                    <remote_id>$!value</remote_id>
+                </id>
+            </document>
+     </component>
+  #end
+
+  ## creates a reference component, using a fleet_id
+  #macro(cmp_fleet $component $table $value)
+     <component name="$!component">
+            <document table="$!table">
+                <id>
+                    <fleet_id>$!value</fleet_id>
+                </id>
+            </document>
+     </component>
+  #end
+  
+  ## creates a reference udc component, using a fleet_id
+  #macro(cmp_fleet_udc $component $table $value)
+     <component name="$!component" user_defined="true">
+            <document table="$!table">
+                <id>
+                    <fleet_id>$!value</fleet_id>
+                </id>
+            </document>
+     </component>
+  #end
+  
+  ## creates a reference udc component, using a fleet_id
+  #macro(cmp_remote_udc $component $table $value)
+     <component name="$!component" user_defined="true">
+            <document table="$!table">
+                <id>
+                    <remote_id>$!value</remote_id>
+                </id>
+            </document>
+     </component>
+  #end
+  
+  ## Schreibt den Wert für eine Preise in das Import-XML (f_value muss eine Zahl oder String sein)
+  #macro(cmp_cur $h_component $f_component $f_value $f_currency)
+      #if ( $t.hasValue($f_value) )
+          #if ($f_value.getClass().getName() == "java.lang.String")
+            #set ( $tmp=$t.parseNumber($f_value))
+          #else
+            #set ($tmp = $f_value)
+          #end
+          #set ( $h_value = $t.convertCurrency($tmp, "$!f_currency") )
+          #cmp("$!h_component", $t.convertNumber($h_value, 2) )
+          #cmp("$!f_component", $t.convertNumber($tmp, 2) )
+      #else
+          #cmp("$!h_component", "" )
+          #cmp("$!f_component", "" )
+      #end
+  #end
+
+  ## Schreibt den Wert für eine Preise in das Import-XML (f_value muss eine Zahl oder String sein)
+  ## Rundet auf 5 Nachkommastellen und sollte nur für Komponenten verwendet werden die datenbankseitig entsprechend definiert sind. z.B. Mehr-Minder-Sätze
+  #macro(cmp_cur_high_prc $h_component $f_component $f_value $f_currency)
+      #if ( $t.hasValue($f_value) )
+          #if ($f_value.getClass().getName() == "java.lang.String")
+            #set ( $tmp=$t.parseNumber($f_value))
+          #else
+            #set ($tmp = $f_value)
+          #end
+          #set ( $h_value = $t.convertCurrency($tmp, "$!f_currency") )
+          #cmp("$!h_component", $t.convertNumber($h_value, 5) )
+          #cmp("$!f_component", $t.convertNumber($tmp, 5) )
+      #else
+          #cmp("$!h_component", "" )
+          #cmp("$!f_component", "" )
+      #end
+  #end
+  
+## in import.log und den normalen logger loggen
+#macro (log $msg)
+$!t.writeToFile("import.log", "$!msg", true)
+#if ( "$!skipimport" == "true" || "$!testrun" == "true" )
+$!t.logger.info("$!msg")
+#end
+#end
+## debug-ausgaben, welche nur im Testmodus geschrieben werden (verwendet log)
+#macro (debug $msg)
+#if ( "$!skipimport" == "true" || "$!testrun" == "true" )
+#log("[debug] $!msg")
+#end
+#end

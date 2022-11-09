@@ -1,0 +1,302 @@
+<documents>
+    #foreach($o in $!content)
+        ## initial Variables
+
+        ## Driver at GP
+
+        #if($t.hasValue("$!o.name") && $t.hasValue("$!o.vorname"))
+            #set($remoteDriverAtGPID = "$!{o.name}/$!{o.vorname}")
+            <document table="g_partner">
+                <id>
+                    <remote_id>$!remoteDriverAtGPID</remote_id>
+                </id>
+                #cmp("name","$!o.name")
+                #cmp("name2","$!o.vorname")
+                #cmp("kunden_nr",$t.parseInt("$!o.p_nummer"))
+                #cmp("versich_nr", "$!o.versicherungsnr")
+            </document>
+            #set($gGruppenID = $!t.findBusinesspartnerGroup("MA","Mitarbeiter"))
+            <document table="gp_gruppen">
+                #cmp_fleet("gp_gruppen_def_id","gp_gruppen", "$!gGruppenID")
+                #cmp_remote("g_partner_id","g_partner", "$!remoteDriverAtGPID")
+            </document>
+        #end
+
+        ## Holder of the vehicle
+
+        #if($t.hasValue("$!o.zuordnung_nl"))
+            #if($!o.fahrzeugtyp != "Anhänger")
+                #set($VehicleTypeClassID =
+                $t.findPrimaryByComponentValue("fahrzeugart","bezeichnung","PKW"))
+            #else
+                #set($VehicleTypeClassID =
+                $t.findPrimaryByComponentValue("fahrzeugart","bezeichnung","Anhänger"))
+            #end
+            #set($remoteHolderID = "$!o.zuordnung_nl")
+            <document table="g_partner">
+                <id>
+                    <remote_id>$!remoteHolderID</remote_id>
+                </id>
+                #cmp("name","$!o.zuordnung_nl")
+            </document>
+            #set($gGruppenIDHalter = $!t.findBusinesspartnerGroup("FA","Firma"))
+            <document table="gp_gruppen">
+                #cmp_fleet("gp_gruppen_def_id","gp_gruppen", "$!gGruppenIDHalter")
+                #cmp_remote("g_partner_id","g_partner", "$!remoteHolderID")
+            </document>
+        #end
+
+        ## Drivers
+
+        #if($t.hasValue("$!o.name") && $t.hasValue("$!o.zuordnung_nl"))
+            #set($remoteDriverID = "$!{o.name}/$!{o.zuordnung_nl}")
+            <document table="fahrer">
+                <id>
+                    <remote_id>$!remoteDriverID</remote_id>
+                </id>
+                #cmp_remote("gp_fahrer_id", "g_partner", "$!remoteDriverAtGPID")
+                #cmp_remote("g_partner_id", "g_partner", "$!remoteHolderID")
+            </document>
+        #end
+
+        ## Manufakturer
+
+        #if($t.hasValue("$!o.hersteller"))
+            #set($vehicleClass = $t.findCode("FZG_KLASSE","$!o.kategorie"))
+            #set($datenquelle = $t.findCode("DATENQUELLE","MANUELL"))
+            #set($statusCode = $t.findCode("OBJ_TYP","FAHRZEUG"))
+            #set($statusActiveID = $t.findCode("FTYP_STATUS","AKTIV"))
+            #set($remoteManufakturerID = "$!o.hersteller")
+            <document table="hersteller">
+                <id>
+                    <remote_id>$remoteManufakturerID</remote_id>
+                </id>
+                #cmp("bezeichnung","$!o.hersteller")
+                #cmp_fleet("datenquelle_id","code","$!datenquelle")
+                #cmp_fleet("obj_code_id","code","$!statusCode")
+            </document>
+
+            ## Model
+
+            #if($t.hasValue("$!o.modellreihe"))
+                #set($remoteModellID = "$!{o.modellreihe}§$!{remoteManufakturerID}")
+                <document table="modell">
+                    <id>
+                        <remote_id>$remoteModellID</remote_id>
+                    </id>
+                    #cmp("bezeichnung","$!o.modellreihe")
+                    #cmp_remote("hersteller_id","hersteller","$!remoteManufakturerID")
+                    #cmp_fleet("datenquelle_id","code","$!datenquelle")
+                </document>
+            #else
+                #set($remoteModellID = "ohne/$!{remoteManufakturerID}")
+                <document table="modell">
+                    <id>
+                        <remote_id>$!remoteModellID</remote_id>
+                    </id>
+                    #cmp("bezeichnung","$!o.modellreihe")
+                    #cmp_remote("hersteller_id","hersteller","$!remoteManufakturerID")
+                    #cmp_fleet("datenquelle_id","code","$!datenquelle")
+                </document>
+            #end
+
+            ## Typ
+            #if($t.hasValue("$!remoteModellID"))
+                #set($typeRemoteID = "$!{o.fahrzeugtyp}/$!{remoteModellID}")
+                <document table="typ">
+                    <id>
+                        <remote_id>$!typeRemoteID</remote_id>
+                    </id>
+                    #cmp("bezeichnung","$!o.fahrzeugtyp")
+                    #cmp_remote("modell_id","modell","$!remoteModellID")
+                    #cmp_fleet("datenquelle_id","code","$!datenquelle")
+                </document>
+            #end
+            ## New Obj vehicle type
+
+            #set($remoteVehicleTypeID = "$!{o.fahrzeugtyp}/$!{o.remoteTypeID}")
+            <document table="fahrzeug_typ">
+                <id>
+                    <remote_id>$!remoteVehicleTypeID</remote_id>
+                </id>
+                #cmp("bezeichnung","$!o.fahrzeugtyp")
+                #if($t.hasValue("$!remoteModellID"))
+                    #cmp_remote("typ_id","typ","$!typeRemoteID")
+                #end
+                #cmp("bemerkung","$!o.bemerkung")
+                #cmp_fleet("status_code_id","code","$!statusCode")
+                #cmp_fleet("datenquelle_id","code","$!datenquelle")
+                #cmp_fleet("fahrzeugart_id","fahrzeugart","$!VehicleTypeClassID")
+                #cmp("bemerkung","$!o.bemerkung")
+                #cmp_fleet("status_code_id","code","$!statusActiveID")
+                #if($t.hasValue("$!vehicleClass"))
+                    #cmp_fleet("klasse_code_id","code","$!vehicleClass")
+                #end
+            </document>
+        #end
+
+        ## vehicles
+
+        #if($t.hasValue("$!o.kennzeichen") && $t.hasValue("$!o.fahrgestellnummer"))
+
+                ## Status log
+## => das ist für Statuslog 
+            #set($status_objekt = $t.findCode("STATUS_OBJEKT", "FAHRZEUG"))
+            #set($status_gruppe = $t.findCode("STATUS_GRUPPE", "FAHRZEUG"))
+            #set($status_quelle = $t.findCode("STATUS_QUELLE", "MANUELL"))
+            #set($statuslog_aktiv = $t.findPrimaryByComponentValue("c4u_cf_statuslog_state", "code", "AKTIV"))
+
+            #set($remoteVehicleID = "$!{o.fahrgestellnummer}/$!{o.kennzeichen}")
+            #set($objCodeId = $t.findCode("OBJ_TYP", "FAHRZEUG"))
+            #set($vehicleClass = $t.findCode("FZG_KLASSE","$!o.kategorie"))
+            <document table="fahrzeug">
+                <id>
+                    <remote_id>$!remoteVehicleID</remote_id>
+                </id>
+                #cmp_fleet("obj_code_id", "code", "$!objCodeId")
+                #cmp("kennzeichen", "$!o.kennzeichen")
+                #cmp("fahrgestellnr", "$!o.fahrgestellnummer")
+                #cmp_remote("g_partner_id", "g_partner", "$!remoteHolderID")
+                #cmp_remote("fahrer_id", "fahrer", "$!remoteDriverID")
+                #cmp_remote("fahrzeug_typ_id","fahrzeug_typ","$!remoteVehicleTypeID")
+                #cmp("hersteller","$!o.hersteller")
+                #cmp("modell","$!o.modellreihe")
+                #cmp("typ","$!o.fahrzeugtyp")
+                #cmp_fleet("fahrzeugart_id","fahrzeugart","$!VehicleTypeClassID")
+                #cmp("fahrzeugtyp","$!o.fahrzeugtyp")
+                #if($t.hasValue("$!vehicleClass"))
+                    #cmp_fleet("klasse_code_id","code","$!vehicleClass")
+                #end
+
+            </document>
+
+          <document table="status_log">
+    #cmp_remote("status_log_id","fahrzeug","$!remoteVehicleID")
+    #cmp_remote("bezug_id", "fahrzeug", "$!remoteVehicleID")
+    #cmp("objekt_code_id", "$!status_objekt")
+    #cmp("status_gruppe_code_id", "$!status_gruppe")
+    #cmp("quelle_code_id", "$!status_quelle")
+    #cmp_fleet("statuslog_state_id", "c4u_cf_statuslog_state", "$!statuslog_aktiv")
+    #cmp_datetime_format("datum_von", "01/01/2022","dd/MM/yyyy")
+  </document>
+        #end
+
+        ## Vehicle next revision
+
+        #if($t.hasValue("$!o.tuev"))
+            #set($nextRevisionID = "$!{o.tuev}/$!{remoteVehicleID}")
+            #set($kabaum = $t.findPrimaryByUid("ka_baum","1000"))
+            #set($transaktionID = $t.findPrimaryByUid("transaktion","TÜV"))
+            <document table="fzg_termine">
+                <id>
+                    <remote_id>$!nextRevisionID</remote_id>
+                </id>
+                #cmp_remote("fahrzeug_id","fahrzeug","$!remoteVehicleID")
+                #cmp_fleet("transaktion_id","transaktion","$!transaktionID")
+                #cmp_fleet("knoten_id","ka_baum","$!kabaum")
+                #if($!o.tuev != "ohne")
+                    #cmp_datetime_format("naechster_termin","$!o.tuev","MM/yy")
+                #end
+            </document>
+        #end
+
+        ## Fuel cards
+
+        #if($t.hasValue("$!o.aral_kartennummer"))
+            #set($fuelCardsID = "$!{o.aral_kartennummer}")
+            #set($cardsType = $t.findCode("KARTENTYP","ST"))
+            #set($cardsStatus = $t.findCode("TANKKARTENSTATUS","GUELTIG"))
+
+            <document table="tankkarten">
+                <id>
+                    <remote_id>$!fuelCardsID</remote_id>
+                </id>
+                #cmp("kartennr","$!o.aral_kartennummer")
+                #cmp("pincode","$!o.code")
+                #cmp_remote("fahrzeug_id","fahrzeug","$!remoteVehicleID")
+                #cmp_remote("g_partner_id","g_partner","$!remoteHolderID")
+                #cmp_remote("fahrer_id","fahrer","$!remoteDriverID")
+                #cmp_fleet("kartentyp_id","code","$!cardsType")
+            </document>
+        #end
+        ## Leasing
+
+        #if($t.hasValue("$!o.leasing"))
+            #set($remoteLeasingID = "$!o.leasing")
+            <document table="g_partner">
+                <id>
+                    <remote_id>$!remoteLeasingID</remote_id>
+                </id>
+                #cmp("name","$!o.leasing")
+            </document>
+            #set($gGruppenIDHLeasing = $!t.findBusinesspartnerGroup("LF","Leasing"))
+            <document table="gp_gruppen">
+                #cmp_fleet("gp_gruppen_def_id","gp_gruppen", "$!gGruppenIDHLeasing")
+                #cmp_remote("g_partner_id","g_partner", "$!remoteLeasingID")
+            </document>
+        #end
+
+        ## contracs
+        #set($thousand = "000") 
+        ## Problem with a weird Charactesr &#39;
+
+        #set($LzLlAll = $t.cut("$!o.lz_ll",7))
+        #set($lz = $t.cut("$!LzLlAll",2))
+        #set($ll = $t.cutLeft("$!LzLlAll",2))
+        #set($ll = $ll+$thousand)
+        ##    $t.logger.info("$!ll")
+        ## contracs
+
+        #set($objType = $!t.findPrimaryByUid("c4u_cf_objcontr_type","Type1"))
+        #if($t.hasValue("$!o.lv_nr") && $t.hasValue($!o.zulassung))
+            #set($remoteContracsID = "$!{o.lv_nr}/$!{o.zulassung}")
+            <document table="c4u_cf_objcontr">
+                <id>
+                    <remote_id>$!remoteContracsID</remote_id>
+                </id>
+                #cmp_fleet("objcontr_type_id","objcontr_type","$!objType")
+                #cmp_datetime_format("contract_start","$!o.zulassung","dd/MM/yyyy")
+                #if($!o.vrt_ende != "gekauft")
+                    #cmp_datetime_format("contract_end","$!o.vrt_ende","dd/MM/yyyy")
+                #end
+                #cmp("duration_in_month",$t.parseInt("$!lz"))
+                #cmp("kilometrage_total",$t.parseInt("$!ll"))
+                #cmp_remote("driver_bp_id", "g_partner", "$!remoteDriverAtGPID")
+                #cmp_remote("vehicle_id","fahrzeug","$!remoteVehicleID")
+                #cmp_remote("lessor_bp_id","g_partner","$!remoteLeasingID")
+                #cmp_remote("lessee_bp_id","g_partner","$!remoteHolderID")
+                #cmp("contract_no","$!o.lv_nr")
+                #cmp("version_no",1)
+                ##  #cmp_cur("f_sum_packages","h_sum_packages","$!o.kst","EUR")
+            </document>
+
+            ## Package Type
+
+            #set($kabaum = $t.findPrimaryByUid("ka_baum","1000"))
+            #set($position_contract_def = 1)
+            #set($remoteContracsPdef = "$!{remoteContracsID}/finanzrate")
+            <document table="c4u_cf_objcontr_pdef">
+                <id>
+                    <remote_id>$!remoteContracsPdef</remote_id>
+                </id>
+                #cmp_fleet("costtype_node_id","ka_baum","$!kabaum")
+                #cmp_fleet("objcontr_type_id","c4u_cf_objcontr_type","$!objType")
+                #cmp("pc","$!position_contract_def")
+                #cmp("code","FR")
+            </document>
+
+            ## Package definition
+
+            #set($remotePkgDefID = "$!{remoteContracsID}/$!{o.kst}")
+            <document table="c4u_cf_objcontr_pkg">
+                <id>
+                    <remote_id>$!remotePkgDefID</remote_id>
+                </id>
+                #cmp_remote("objcontr_id","c4u_cf_objcontr","$!remoteContracsID")
+                #cmp_remote("objcontr_pdef_id","c4u_cf_objcontr_pdef","$!remoteContracsPdef")
+                #cmp_cur("h_value","f_value",$t.parseInt("$!o.kst"),"EUR")
+            </document>
+
+        #end
+    #end
+</documents>

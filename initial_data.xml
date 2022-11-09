@@ -1,0 +1,56 @@
+<initial_data>
+    <data_definition document_type="gp_gruppen_def">
+        <uid>MA</uid>
+        <properties>
+            { "bezeichnung": "Mitarbeiter" }
+        </properties>
+    </data_definition>
+
+    <data_definition document_type="gp_gruppen_def">
+        <uid>FA</uid>
+        <properties>
+            {
+                "bezeichnung": "Firma"
+            }
+        </properties>
+    </data_definition>
+
+    <data_definition document_type="gp_gruppen_def">
+        <uid>LF</uid>
+        <properties>
+            {
+                "bezeichnung": "Leasing"
+            }
+        </properties>
+    </data_definition>
+
+<data_definition document_type="c4u_cf_objcontr_type">
+        <uid>Type1</uid>
+        <properties>
+            {
+                "descr": "Leasing",
+                "info" : "Type 1"
+            }
+        </properties>
+    </data_definition>
+
+    <data_definition document_type="c4u_cf_objcontr_type">
+        <uid>Type2</uid>
+        <properties>
+            {
+                "descr": "Leasing",
+                "info" : "Type 2"
+            }
+        </properties>
+    </data_definition>
+
+    <data_definition document_type="transaktion">
+    <uid>TÜV</uid>
+    <properties>
+        {
+            "bezeichnung":"tankkarte",
+            "code" : "TÜV"
+        }
+    </properties>
+    </data_definition>
+</initial_data>
